@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>GA4 Handler Test Page</title>
+	<style>
+		:root {
+			--bg: #f6f7f9;
+			--surface: #ffffff;
+			--surface-alt: #eef1f5;
+			--text: #17202a;
+			--muted: #607083;
+			--border: #c8d1dc;
+			--accent: #0f766e;
+			--accent-hover: #115e59;
+			--danger: #b42318;
+			--code-bg: #101828;
+			--code-text: #e6edf6;
+			--shadow: 0 12px 30px rgba(23, 32, 42, 0.08);
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			background: var(--bg);
+			color: var(--text);
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+			font-size: 16px;
+			line-height: 1.5;
+		}
+
+		header {
+			border-bottom: 1px solid var(--border);
+			background: var(--surface);
+		}
+
+		.header-inner,
+		main {
+			width: min(1380px, calc(100% - 32px));
+			margin: 0 auto;
+		}
+
+		.header-inner {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 24px;
+			padding: 20px 0;
+		}
+
+		.header-actions {
+			display: flex;
+			align-items: center;
+			justify-content: flex-end;
+			flex-wrap: wrap;
+			gap: 8px;
+		}
+
+		.mode-buttons {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+		}
+
+		h1,
+		h2,
+		h3,
+		p {
+			margin: 0;
+		}
+
+		h1 {
+			font-size: 24px;
+			line-height: 1.2;
+			font-weight: 700;
+		}
+
+		h2 {
+			font-size: 18px;
+			line-height: 1.25;
+			font-weight: 700;
+		}
+
+		h3 {
+			font-size: 14px;
+			line-height: 1.25;
+			font-weight: 700;
+			color: var(--muted);
+			text-transform: uppercase;
+		}
+
+		main {
+			display: grid;
+			grid-template-columns: minmax(280px, 420px) minmax(0, 1fr);
+			gap: 20px;
+			padding: 24px 0;
+		}
+
+		.panel {
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			background: var(--surface);
+			box-shadow: var(--shadow);
+			overflow: hidden;
+		}
+
+		.panel-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			padding: 14px 16px;
+			border-bottom: 1px solid var(--border);
+			background: var(--surface-alt);
+		}
+
+		.stack {
+			display: grid;
+			gap: 12px;
+			padding: 16px;
+		}
+
+		.group {
+			display: grid;
+			gap: 8px;
+		}
+
+		.actions {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 8px;
+		}
+
+		button {
+			min-height: 44px;
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			background: var(--surface);
+			color: var(--text);
+			font: inherit;
+			font-size: 14px;
+			font-weight: 650;
+			cursor: pointer;
+		}
+
+		button:hover {
+			border-color: var(--accent);
+			color: var(--accent-hover);
+		}
+
+		button:focus-visible {
+			outline: 3px solid rgba(15, 118, 110, 0.24);
+			outline-offset: 2px;
+		}
+
+		.primary {
+			border-color: var(--accent);
+			background: var(--accent);
+			color: #ffffff;
+		}
+
+		.primary:hover {
+			background: var(--accent-hover);
+			color: #ffffff;
+		}
+
+		.danger {
+			border-color: rgba(180, 35, 24, 0.38);
+			color: var(--danger);
+		}
+
+		.mode-button.active {
+			border-color: var(--accent);
+			background: var(--accent);
+			color: #ffffff;
+		}
+
+		.output-grid {
+			display: grid;
+			grid-template-columns: minmax(260px, 380px) minmax(0, 1fr);
+			min-height: calc(100vh - 128px);
+		}
+
+		.event-list {
+			border-right: 1px solid var(--border);
+			background: var(--surface);
+			overflow: auto;
+			max-height: calc(100vh - 128px);
+		}
+
+		.event-row {
+			display: grid;
+			gap: 4px;
+			width: 100%;
+			padding: 12px 14px;
+			border: 0;
+			border-bottom: 1px solid var(--border);
+			border-radius: 0;
+			text-align: left;
+		}
+
+		.event-row:hover,
+		.event-row.active {
+			background: #eef7f6;
+		}
+
+		.event-name {
+			font-weight: 700;
+		}
+
+		.event-meta {
+			color: var(--muted);
+			font-size: 12px;
+		}
+
+		.viewer {
+			display: grid;
+			grid-template-rows: auto minmax(0, 1fr);
+			min-width: 0;
+		}
+
+		.viewer-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			padding: 14px 16px;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.badge {
+			display: inline-flex;
+			align-items: center;
+			min-height: 28px;
+			padding: 0 10px;
+			border: 1px solid var(--border);
+			border-radius: 999px;
+			color: var(--muted);
+			font-size: 12px;
+			font-weight: 700;
+		}
+
+		pre {
+			margin: 0;
+			padding: 16px;
+			background: var(--code-bg);
+			color: var(--code-text);
+			overflow: auto;
+			font-family: "SFMono-Regular", Consolas, monospace;
+			font-size: 13px;
+			line-height: 1.55;
+		}
+
+		.trace {
+			display: grid;
+			gap: 10px;
+			padding: 16px;
+			border-top: 1px solid var(--border);
+			background: var(--surface);
+		}
+
+		.trace ol {
+			display: grid;
+			gap: 6px;
+			margin: 0;
+			padding-left: 22px;
+		}
+
+		.trace li {
+			font-family: "SFMono-Regular", Consolas, monospace;
+			font-size: 13px;
+		}
+
+		.empty {
+			display: grid;
+			align-content: center;
+			min-height: 320px;
+			padding: 24px;
+			color: var(--muted);
+			text-align: center;
+		}
+
+		@media (max-width: 920px) {
+			.header-inner {
+				align-items: flex-start;
+				flex-direction: column;
+			}
+
+			main,
+			.output-grid {
+				grid-template-columns: 1fr;
+			}
+
+			.event-list {
+				border-right: 0;
+				border-bottom: 1px solid var(--border);
+				max-height: 320px;
+			}
+		}
+
+		@media (max-width: 560px) {
+			.actions {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
+</head>
+<body>
+	<header>
+		<div class="header-inner">
+			<div>
+				<h1>GA4 Handler Test Page</h1>
+				<p id="status" class="event-meta">Ready</p>
+			</div>
+			<div class="header-actions">
+				<span class="badge" id="fixture-mode">Fixture: random</span>
+				<div class="mode-buttons" aria-label="Fixture mode">
+					<button class="mode-button" type="button" data-fixture-mode="random">Random</button>
+					<button class="mode-button" type="button" data-fixture-mode="static">Static</button>
+				</div>
+				<button class="danger" type="button" id="clear-output">Clear Output</button>
+			</div>
+		</div>
+	</header>
+
+	<main>
+		<section class="panel" aria-labelledby="actions-title">
+			<div class="panel-head">
+				<h2 id="actions-title">Events</h2>
+				<span class="badge" id="event-count">0 pushes</span>
+			</div>
+			<div class="stack" id="action-groups"></div>
+		</section>
+
+		<section class="panel output-grid" aria-labelledby="output-title">
+			<div class="event-list" id="event-list"></div>
+			<div class="viewer">
+				<div class="viewer-head">
+					<h2 id="output-title">Payload</h2>
+					<span class="badge" id="selected-event">None selected</span>
+				</div>
+				<div id="payload-view" class="empty">Click an event to emit a payload.</div>
+			</div>
+		</section>
+	</main>
+
+	<script>
+		// We need a dataLayer to intercept before the handler loads
+		window.dataLayer = window.dataLayer || [];
+
+		// Tell the handler to record the functions it traverses for this test page
+		window.ga4TraceEnabled = true;
+
+		/**
+		 * Wrap the dataLayer push method so the test page can observe emitted payloads
+		 */
+		(function() {
+			let originalPush = window.dataLayer.push.bind( window.dataLayer );
+			let pushes = [];
+			let listeners = [];
+
+			window.dataLayer.push = function() {
+				let result = originalPush.apply( window.dataLayer, arguments );
+
+				Array.from( arguments ).forEach( function( payload ) {
+					let entry = {
+						id : pushes.length + 1, // Keep a stable counter for the visible output
+						timestamp : new Date().toISOString(), // When was this pushed?
+						payload : payload, // The actual dataLayer payload
+						executionPath : window.ga4GetExecutionPath
+							? window.ga4GetExecutionPath()
+							: [] // The handler path, if tracing is available
+					};
+
+					pushes.push( entry );
+					console.log( 'dataLayer.push', payload );
+					listeners.forEach( function( listener ) {
+						listener( entry, pushes );
+					} );
+				} );
+
+				return result;
+			};
+
+			window.ga4TestHarness = {
+				pushes : pushes,
+				onPush : function( listener ) {
+					listeners.push( listener ); // Register a page callback for new payloads
+				},
+				clear : function() {
+					pushes.length = 0; // Empty the visible history
+					window.dataLayer.length = 0; // Empty the intercepted dataLayer
+					listeners.forEach( function( listener ) {
+						listener( null, pushes );
+					} );
+				}
+			};
+		}());
+	</script>
+	<script src="ga4-testing-data.js"></script>
+	<script src="ga4-handler.js"></script>
+	<script>
+		// Define the actions this test page can emit through the handler
+		let actions = [
+			{
+				group : 'Shop',
+				items : [
+					{ label : 'View Item', run : function() { viewItem(); } },
+					{ label : 'Add To Cart', run : function() { addToCart(); } },
+					{ label : 'Remove From Cart', run : function() { removeFromCart(); } },
+					{ label : 'Buy Data Pack', run : function() { purchaseDatapack(); } },
+					{ label : 'Recharge', run : function() { recharge(); } },
+					{ label : 'Bitcoin Payment', run : function() { bitcoinPayment(); } },
+					{ label : 'PayID Payment', run : function() { payIdPayment(); } }
+				]
+			},
+			{
+				group : 'Checkout',
+				items : [
+					{ label : 'Begin Checkout', run : function() { checkout( false ); } },
+					{ label : 'Purchase', run : function() { checkout( true ); } },
+					{ label : 'View Payment Info', run : function() { viewPaymentInfo(); } },
+					{ label : 'Add Payment Info', run : function() { addPaymentInfo(); } },
+					{ label : 'Remove Payment Info', run : function() { removePaymentInfo(); } }
+				]
+			},
+			{
+				group : 'Services',
+				items : [
+					{ label : 'Add Service', run : function() { addService(); } },
+					{ label : 'View Services', run : function() { viewServices(); } },
+					{ label : 'View Status', run : function() { viewStatus( 'POI' ); } },
+					{ label : 'View Usage', run : function() { viewUsage( 'AVC' ); } },
+					{ label : 'View Databank', run : function() { viewDatabank(); } },
+					{ label : 'Modify Service', run : function() { modifyService(); } },
+					{ label : 'Pause Service', run : function() { pauseService( true ); } },
+					{ label : 'Disconnect Service', run : function() { disconnectService(); } },
+					{ label : 'Transfer Service', run : function() { transferService(); } },
+					{ label : 'Request Reprovision', run : function() { requestReprovision(); } },
+					{ label : 'IPv4 Change', run : function() { requestIPv4AddressChange(); } },
+					{ label : 'Add IPv4 PTR', run : function() { addIPv4PTR(); } },
+					{ label : 'Advanced Cxn', run : function() { viewAdvancedCxnInfo(); } },
+					{ label : 'View CIS', run : function() { viewCIS(); } }
+				]
+			},
+			{
+				group : 'Account',
+				items : [
+					{ label : 'Login', run : function() { userLogin(); } },
+					{ label : 'Logout', run : function() { userLogout(); } },
+					{ label : 'Password Reset', run : function() { passwordReset(); } },
+					{ label : 'View Transactions', run : function() { viewTransactions( true, true ); } },
+					{ label : 'Add Transaction', run : function() { addTransaction(); } },
+					{ label : 'View Orders', run : function() { viewOrderHistory( true ); } },
+					{ label : 'View IP Addresses', run : function() { viewIPAddresses(); } },
+					{ label : 'Auto Recharge', run : function() { autoRecharge( true ); } },
+					{ label : 'View Referrals', run : function() { viewReferrals(); } },
+					{ label : 'Manage Account', run : function() { manageAccountDetails(); } },
+					{ label : 'Low Balance Notice', run : function() { modifyLowBalanceNotification(); } },
+					{ label : 'Add Referral Code', run : function() { addReferralCode(); } },
+					{ label : 'Referral Link', run : function() { requestReferralLink(); } },
+					{ label : 'Facebook Link', run : function() { linkToFacebook( true ); } },
+					{ label : 'Modify Account', run : function() { modifyAccountDetails(); } },
+					{ label : 'Sync Test', run : function() { syncTest(); } }
+				]
+			},
+			{
+				group : 'Raw',
+				items : [
+					{
+						label : 'Raw Custom Event',
+						run : function() {
+							pushToDataLayer(
+								'raw_test_event',
+								false,
+								{
+									source : 'ga4-test-page',
+									triggered_at : new Date().toISOString()
+								}
+							);
+						}
+					}
+				]
+			}
+		];
+
+		// Cache the elements we need to mutate as events are emitted
+		let actionGroups = document.getElementById( 'action-groups' );
+		let eventList = document.getElementById( 'event-list' );
+		let payloadView = document.getElementById( 'payload-view' );
+		let eventCount = document.getElementById( 'event-count' );
+		let status = document.getElementById( 'status' );
+		let selectedEvent = document.getElementById( 'selected-event' );
+		let fixtureModeBadge = document.getElementById( 'fixture-mode' );
+
+		// Track the selected payload so output can update cleanly
+		let selectedPushId = null;
+
+		/**
+		 * Render the buttons that emit the handler events
+		 */
+		function renderActions() {
+			actions.forEach( function( group ) {
+				let wrapper = document.createElement( 'div' );
+				let heading = document.createElement( 'h3' );
+				let buttons = document.createElement( 'div' );
+
+				wrapper.className = 'group';
+				heading.textContent = group.group;
+				buttons.className = 'actions';
+
+				group.items.forEach( function( item ) {
+					let button = document.createElement( 'button' );
+					button.type = 'button';
+					button.textContent = item.label;
+					button.addEventListener( 'click', function() {
+						// Start the trace at the action the user clicked
+						if ( window.ga4BeginExecutionPath ) {
+							window.ga4BeginExecutionPath( getActionTraceName( item.run ) );
+						}
+
+						// Actually fire the handler function for this test action
+						item.run();
+						status.textContent = item.label + ' emitted';
+					} );
+					buttons.appendChild( button );
+				} );
+
+				wrapper.appendChild( heading );
+				wrapper.appendChild( buttons );
+				actionGroups.appendChild( wrapper );
+			} );
+		}
+
+		/**
+		 * Wire up the fixture controls so we can swap random and static test data
+		 */
+		function setupFixtureControls() {
+			let activeFixtureMode = window.ga4FixtureMode || 'random';
+			fixtureModeBadge.textContent = 'Fixture: ' + activeFixtureMode;
+
+			Array.from( document.querySelectorAll( '[data-fixture-mode]' ) ).forEach( function( button ) {
+				let buttonMode = button.dataset.fixtureMode;
+
+				button.classList.toggle( 'active', buttonMode === activeFixtureMode );
+
+				button.addEventListener( 'click', function() {
+					// If we're already on this fixture path, there's nothing to reload
+					if ( buttonMode === activeFixtureMode ) {
+						return;
+					}
+
+					// Store the mode if the fixture script exposed the helper
+					if ( typeof setStoredFixtureMode === 'function' ) {
+						setStoredFixtureMode( buttonMode );
+					}
+
+					// Reflect the fixture path in the URL so it is shareable
+					let url = new URL( window.location.href );
+					url.searchParams.set( 'fixture', buttonMode );
+					window.location.href = url.toString();
+				} );
+			} );
+		}
+
+		/**
+		 * Select a pushed payload and render its manifest/execution path
+		 *
+		 * @param {number} pushId	The pushed payload ID to select
+		 */
+		function selectPush( pushId ) {
+			let entry = window.ga4TestHarness.pushes.find( function( item ) {
+				return item.id === pushId;
+			} );
+
+			// If the entry is gone, leave the viewer alone
+			if ( !entry ) {
+				return;
+			}
+
+			selectedPushId = pushId;
+			selectedEvent.textContent = entry && entry.payload.event ? entry.payload.event : 'dataLayer';
+
+			payloadView.className = '';
+			payloadView.innerHTML = '';
+
+			let pre = document.createElement( 'pre' );
+			pre.textContent = JSON.stringify( entry.payload, null, 2 );
+			payloadView.appendChild( pre );
+
+			let trace = document.createElement( 'div' );
+			let traceHeading = document.createElement( 'h3' );
+			let traceList = document.createElement( 'ol' );
+
+			trace.className = 'trace';
+			traceHeading.textContent = 'Execution Path';
+
+			// If the handler didn't hand anything back, state that plainly
+			if ( entry.executionPath.length === 0 ) {
+				let emptyTrace = document.createElement( 'li' );
+				emptyTrace.textContent = 'No trace recorded';
+				traceList.appendChild( emptyTrace );
+			}
+			else {
+				entry.executionPath.forEach( function( functionName ) {
+					let item = document.createElement( 'li' );
+					item.textContent = functionName;
+					traceList.appendChild( item );
+				} );
+			}
+
+			trace.appendChild( traceHeading );
+			trace.appendChild( traceList );
+			payloadView.appendChild( trace );
+
+			Array.from( eventList.querySelectorAll( '.event-row' ) ).forEach( function( button ) {
+				button.classList.toggle( 'active', Number( button.dataset.pushId ) === pushId );
+			} );
+		}
+
+		/**
+		 * Get a readable name for the function attached to an action
+		 *
+		 * @param {Function} run	The action callback to inspect
+		 * @returns {string}
+		 */
+		function getActionTraceName( run ) {
+			let match = run.toString().match( /\\{\\s*([^;(]+\\([^;]*\\))/ );
+
+			if ( match ) {
+				return match[1];
+			}
+
+			return 'clicked action';
+		}
+
+		/**
+		 * Get only the payloads we want to show on the page
+		 *
+		 * @returns {Array<object>}
+		 */
+		function getVisiblePushes() {
+			return window.ga4TestHarness.pushes.filter( function( entry ) {
+				return Boolean( entry.payload.event );
+			} );
+		}
+
+		/**
+		 * Render the current list of emitted events and keep the viewer in sync
+		 */
+		function renderEvents() {
+			let visiblePushes = getVisiblePushes();
+			let pushes = visiblePushes.slice().reverse();
+			eventList.innerHTML = '';
+			eventCount.textContent = visiblePushes.length + ' events';
+
+			if ( pushes.length === 0 ) {
+				let empty = document.createElement( 'div' );
+				empty.className = 'empty';
+				empty.textContent = 'No payloads emitted yet.';
+				eventList.appendChild( empty );
+				payloadView.className = 'empty';
+				payloadView.textContent = 'Click an event to emit a payload.';
+				selectedEvent.textContent = 'None selected';
+				return;
+			}
+
+			pushes.forEach( function( entry ) {
+				let button = document.createElement( 'button' );
+				let name = document.createElement( 'span' );
+				let meta = document.createElement( 'span' );
+
+				button.type = 'button';
+				button.className = 'event-row';
+				button.dataset.pushId = entry.id;
+				name.className = 'event-name';
+				meta.className = 'event-meta';
+				name.textContent = entry.payload.event;
+				meta.textContent = '#' + entry.id + ' - ' + entry.timestamp;
+
+				button.appendChild( name );
+				button.appendChild( meta );
+				button.addEventListener( 'click', function() {
+					selectPush( entry.id );
+				} );
+
+				eventList.appendChild( button );
+			} );
+
+			// If the old selected payload disappeared, select the newest visible event
+			if ( selectedPushId === null || !visiblePushes.some( function( item ) {
+				return item.id === selectedPushId;
+			} ) ) {
+				selectPush( visiblePushes[visiblePushes.length - 1].id );
+			}
+		}
+
+		// Clear the test page output without needing a page reload
+		document.getElementById( 'clear-output' ).addEventListener( 'click', function() {
+			selectedPushId = null;
+			status.textContent = 'Output cleared';
+			window.ga4TestHarness.clear();
+		} );
+
+		// Every dataLayer push should re-render the output list
+		window.ga4TestHarness.onPush( function( entry ) {
+			renderEvents();
+
+			if ( entry && entry.payload.event ) {
+				selectPush( entry.id );
+			}
+		} );
+		setupFixtureControls();
+		renderActions();
+		renderEvents();
+	</script>
+</body>
+</html>
